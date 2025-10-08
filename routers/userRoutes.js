@@ -5,7 +5,11 @@ import bcrypt from "bcrypt";
 const router = Router();
 
 router.get("/", (req, res) => {
-  res.send(User.getUsers());
+  const users = User.getUsers();
+  if (users.length == 0) {
+    return res.status(404).send("Users not found! ");
+  }
+  res.send(users);
 });
 
 router.get("/:id", (req, res) => {
@@ -31,7 +35,6 @@ router.post("/", async (req, res) => {
   }
   res.status(200).send({ id: savedUser.lastInsertRowid });
 });
-export default router;
 
 router.put("/:id", async (req, res) => {
   const { name, email, password } = req.body;
@@ -63,10 +66,12 @@ router.delete("/:id", (req, res) => {
   if (!user) {
     return res.status(404).send("User not found!");
   }
-  
+
   const deletedUser = User.deleteUser(id);
   if (deletedUser.changes != 1) {
     return res.status(501).send("User delete failed! ");
   }
   res.status(201).send("Deleted");
 });
+
+export default router;
