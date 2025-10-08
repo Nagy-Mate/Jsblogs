@@ -16,7 +16,7 @@ router.get("/", (req, res) => {
       id: post.id,
       title: post.title,
       content: post.content,
-      user: User.getUsersById(post.userId).name,
+      userName: User.getUsersById(post.userId).name,
     });
   });
   res.send(postsWithUsers);
@@ -31,7 +31,7 @@ router.get("/:id", (req, res) => {
     id: post.id,
     title: post.title,
     content: post.content,
-    user: User.getUsersById(post.userId).name,
+    userName: User.getUsersById(post.userId).name,
   });
 });
 
