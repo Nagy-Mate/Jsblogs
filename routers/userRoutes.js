@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as User from "../util/user.js";
+import * as Post from "../util/post.js";
 import bcrypt from "bcrypt";
 
 const router = Router();
@@ -66,6 +67,10 @@ router.delete("/:id", (req, res) => {
   if (!user) {
     return res.status(404).send("User not found!");
   }
+  const posts = Post.getPostsByUser(user.id);
+  posts.forEach((p) => {
+    Post.deletePost(p.id);
+  });
 
   const deletedUser = User.deleteUser(id);
   if (deletedUser.changes != 1) {
@@ -73,7 +78,5 @@ router.delete("/:id", (req, res) => {
   }
   res.status(201).send("Deleted");
 });
-
-
 
 export default router;

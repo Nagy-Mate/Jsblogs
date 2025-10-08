@@ -14,6 +14,9 @@ export const getPosts = () => db.prepare(`SELECT * FROM posts`).all();
 export const getPostsById = (id) =>
   db.prepare(`SELECT * FROM posts WHERE id = ?`).get(id);
 
+export const getPostsByUser = (userId) =>
+  db.prepare(`SELECT * FROM posts WHERE userId = ?`).all(userId);
+
 export const savePost = (title, content, userId) =>
   db
     .prepare(`INSERT INTO posts (userId, title, content) VALUES(?, ?, ?)`)
