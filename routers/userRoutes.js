@@ -21,12 +21,52 @@ router.post("/", async (req, res) => {
   if (!name || !email || !password) {
     return res.status(400).send("Missing data! ");
   }
+
   const salt = await bcrypt.genSalt(12);
   const hashedPwd = await bcrypt.hash(password, salt);
+
   const savedUser = User.saveUser(name, email, hashedPwd);
   if (savedUser.changes != 1) {
-    return res.status(501).json({ message: "User save failed! " });
+    return res.status(501).send("User save failed! ");
   }
-  res.status(200).json({ id: savedUser.lastInsertRowid });
+  res.status(200).send({ id: savedUser.lastInsertRowid });
 });
 export default router;
+
+router.put("/:id", async (req, res) => {
+  const { name, email, password } = req.body;
+  const id = req.params.id;
+
+  if (!name || !email || !password || !id) {
+    return res.status(400).send("Missing data! ");
+  }
+
+  const user = User.getUsersById(id);
+  if (!user) {
+    return res.status(404).send("User not found!");
+  }
+
+  const salt = await bcrypt.genSalt(12);
+  const hashedPwd = await bcrypt.hash(password, salt);
+
+  const updatedUser = User.updateUser(id, name, email, hashedPwd);
+
+  if (updatedUser.changes != 1) {
+    return res.status(501).send("User update failed! ");
+  }
+  res.status(201).send("Updated");
+});
+
+router.delete("/:id", (req, res) => {
+  const id = req.params.id;
+  const user = User.getUsersById(id);
+  if (!user) {
+    return res.status(404).send("User not found!");
+  }
+  
+  const deletedUser = User.deleteUser(id);
+  if (deletedUser.changes != 1) {
+    return res.status(501).send("User delete failed! ");
+  }
+  res.status(201).send("Deleted");
+});
