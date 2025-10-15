@@ -13,6 +13,9 @@ export const getUsers = () => db.prepare(`SELECT * FROM users`).all();
 export const getUsersById = (id) =>
   db.prepare(`SELECT * FROM users WHERE id = ?`).get(id);
 
+export const getUsersByEmail = (email) =>
+  db.prepare(`SELECT * FROM users WHERE email = ?`).get(email);
+
 export const saveUser = (name, email, pwd) =>
   db
     .prepare(`INSERT INTO users (name, email, password) VALUES(?, ?, ?)`)
