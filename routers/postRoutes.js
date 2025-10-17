@@ -3,6 +3,7 @@ import * as Post from "../util/post.js";
 import * as User from "../util/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import auth from "../util/authentication.js";
 
 const router = express.Router();
 
@@ -110,12 +111,6 @@ router.delete("/:id", (req, res) => {
   res.status(201).send("Deleted");
 });
 
-function auth(req, res, next) {
-  const accessToken = req.headers.authorize;
-  if (!accessToken) {
-    return res.status(401).send("Unauthorized");
-  }
-  const token = jwt.verify(accessToken, "secret_key");
-}
+
 
 export default router;
