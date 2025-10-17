@@ -1,4 +1,5 @@
 import * as User from "../util/user.js";
+import jwt from "jsonwebtoken";
 
 function auth(req, res, next) {
   try {
@@ -19,7 +20,7 @@ function auth(req, res, next) {
     req.userEmail = user.email;
     next();
   } catch (err) {
-    req.status(500).send(err.message);
+    res.status(500).send(err.message);
   }
 }
 

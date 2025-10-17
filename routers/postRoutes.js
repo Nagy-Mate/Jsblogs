@@ -1,9 +1,6 @@
 import express from "express";
 import * as Post from "../util/post.js";
 import * as User from "../util/user.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import auth from "../util/authentication.js";
 
 const router = express.Router();
 
@@ -36,23 +33,6 @@ router.get("/:id", (req, res) => {
     content: post.content,
     userName: User.getUsersById(post.userId).name,
   });
-});
-router.post("/login", (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).send("Invalid credetntials ");
-  }
-  const user = User.getUsersByEmail(email);
-  if (!user) {
-    return res.status(404).send("User Not found");
-  }
-  if (!bcrypt.compareSync(password, user.password)) {
-    return res.status(400).send("Invalid credetntials ");
-  }
-  const token = jwt.sign({ id: user.id, email: user.email }, "secret_key", {
-    expiresIn: "1d",
-  });
-  res.send({ token: token });
 });
 
 router.post("/", async (req, res) => {
@@ -110,7 +90,5 @@ router.delete("/:id", (req, res) => {
   }
   res.status(201).send("Deleted");
 });
-
-
 
 export default router;

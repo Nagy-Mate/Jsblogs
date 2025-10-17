@@ -1,9 +1,54 @@
 import { Router } from "express";
 import * as User from "../util/user.js";
 import * as Post from "../util/post.js";
+import jwt from "jsonwebtoken";
+import auth from "../util/authentication.js";
 import bcrypt from "bcrypt";
 
 const router = Router();
+
+router.post("/login", (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).send("Invalid credetntials ");
+  }
+  const user = User.getUsersByEmail(email);
+  if (!user) {
+    return res.status(404).send("User Not found");
+  }
+  if (!bcrypt.compareSync(password, user.password)) {
+    return res.status(400).send("Invalid credetntials ");
+  }
+  const token = jwt.sign({ id: user.id, email: user.email }, "secret_key", {
+    expiresIn: "30m",
+  });
+  res.send({ token: token });
+});
+
+router.patch("/:id", auth, async (req, res) => {
+  const id = +req.params.id;
+  if (id != req.userId) {
+    return res.status(400).send("Invalid user id");
+  }
+  const { name, email, password } = req.body;
+  let user = User.getUsersById(id);
+  let hashedPwd;
+  if (password) {
+    const salt = await bcrypt.genSalt(12);
+    hashedPwd = await bcrypt.hash(password, salt);
+  }
+
+  User.updateUser(
+    id,
+    name || user.name,
+    email || user.email,
+    hashedPwd || user.password
+  );
+
+  user = User.getUsersById(id);
+  delete user.password;
+  res.status(200).json(user);
+});
 
 router.get("/", (req, res) => {
   const users = User.getUsers();
@@ -13,18 +58,20 @@ router.get("/", (req, res) => {
   res.send(users);
 });
 
-router.get("/:id", (req, res) => {
-  const user = User.getUsersById(req.params.id);
-  if (!user) {
-    return res.status(404).send("User not found!");
-  }
-  res.send(user);
+router.get("/me", auth, (req, res) => {
+  const user = User.getUsersById(+req.userId);
+  delete user.password;
+  res.status(200).send(user);
 });
 
-router.post("/", async (req, res) => {
+router.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
     return res.status(400).send("Missing data! ");
+  }
+  let user = User.getUsersByEmail(email);
+  if (user) {
+    return res.status(400).send("Email already exists");
   }
 
   const salt = await bcrypt.genSalt(12);
@@ -34,7 +81,9 @@ router.post("/", async (req, res) => {
   if (savedUser.changes != 1) {
     return res.status(501).send("User save failed! ");
   }
-  res.status(200).send({ id: savedUser.lastInsertRowid });
+  user = User.getUsersById(savedUser.lastInsertRowid);
+  delete user.password;
+  res.status(200).json(user);
 });
 
 router.put("/:id", async (req, res) => {
