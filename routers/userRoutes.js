@@ -20,7 +20,7 @@ router.post("/login", (req, res) => {
     return res.status(400).send("Invalid credetntials ");
   }
   const token = jwt.sign({ id: user.id, email: user.email }, "secret_key", {
-    expiresIn: "30m",
+    expiresIn: "30s",
   });
   res.send({ token: token });
 });

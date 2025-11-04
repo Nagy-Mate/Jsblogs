@@ -8,10 +8,7 @@ function auth(req, res, next) {
       return res.status(401).send("Unauthorized");
     }
     const token = jwt.verify(accessToken.split(" ")[1], "secret_key");
-    const now = Math.floor(Date.now() / 1000);
-    if (!token || token?.exp < now) {
-      return res.status(403).send("Access forbidden");
-    }
+
     const user = User.getUsersById(token.id);
     if (!user) {
       return res.status(403).send("Access denied");
@@ -20,7 +17,7 @@ function auth(req, res, next) {
     req.userEmail = user.email;
     next();
   } catch (err) {
-    res.status(500).send(err.message);
+    res.status(500).send(err);
   }
 }
 
